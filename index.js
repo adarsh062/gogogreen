@@ -28,7 +28,7 @@ const path = "./data.json";
 //   const y = random.int(0, 6);
 //   const date = moment().subtract(1, "y").add(2, "d").add(x, "w").add(y, "d").format();
 
-const date = moment().subtract(3, "d").format();
+const date = moment().subtract(2, "d").format();
   const data = {
     date: date,
   };

@@ -4,37 +4,38 @@ import simpleGit from "simple-git";
 import random from "random";
 
 const path = "./data.json";
+const git = simpleGit();
 
-// const markCommit = (x, y) => {
-//   const date = moment()
-//     .subtract(1, "y")
-//     .add(1, "d")
-//     .add(x, "w")
-//     .add(y, "d")
-//     .format();
+const makeCommits = async (n) => {
+  console.log(`Starting ${n} backdated commits...`);
 
-//   const data = {
-//     date: date,
-//   };
+  for (let i = 1; i <= n; i++) {
+    // Pichle 1 saal (52 weeks) me se random week aur random day
+    const x = random.int(0, 51);
+    const y = random.int(0, 6);
+    const date = moment()
+      .subtract(1, "y")
+      .add(1, "d")
+      .add(x, "w")
+      .add(y, "d")
+      .format();
 
-//   jsonfile.writeFile(path, data, () => {
-//     simpleGit().add([path]).commit(date, { "--date": date }).push();
-//   });
-// };
+    const data = {
+      date: date,
+    };
 
-// const makeCommits = (n) => {
-//   if(n===0) return simpleGit().push();
-//   const x = random.int(0, 54);
-//   const y = random.int(0, 6);
-//   const date = moment().subtract(1, "y").add(2, "d").add(x, "w").add(y, "d").format();
+    // data.json update karo aur backdated commit karo
+    await jsonfile.writeFile(path, data);
+    await git.add([path]);
+    await git.commit(date, { "--date": date });
 
-const date = moment().subtract(3, "d").format();
-  const data = {
-    date: date,
-  };
+    console.log(`[${i}/${n}] Commit created for: ${date}`);
+  }
 
-  // console.log(date);
-  
-  jsonfile.writeFile(path, data, () => {
-    simpleGit().add([path]).commit(date, { "--date": date }).push();
-  });
+  console.log("Pushing all commits to GitHub...");
+  await git.push();
+  console.log("Done! Sabhi 20 commits GitHub par push ho chuke hain.");
+};
+
+// Yahan number set kar sakte hain (abhi 20 commits set hai)
+makeCommits(20);

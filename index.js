@@ -6,44 +6,47 @@ import random from "random";
 const path = "./data.json";
 const git = simpleGit();
 
-// Target months: Nov, Dec, Jan, Feb, Mar
-const targetMonths = [
-  { year: 2025, month: 11, days: 30 }, // Nov 2025
-  { year: 2025, month: 12, days: 31 }, // Dec 2025
-  { year: 2026, month: 1,  days: 31 }, // Jan 2026
-  { year: 2026, month: 2,  days: 28 }, // Feb 2026
-  { year: 2026, month: 3,  days: 31 }, // Mar 2026
-  { year: 2026, month: 11, days: 19 }, // Nov 2026 (current date tak)
-];
+const createStreakCommits = async () => {
+  const commitDates = [];
 
-const makeTargetedCommits = async (n) => {
-  console.log(`Starting ${n} targeted commits for Nov, Dec, Jan, Feb, Mar...`);
-
-  for (let i = 1; i <= n; i++) {
-    const target = targetMonths[random.int(0, targetMonths.length - 1)];
-    const day = random.int(1, target.days);
-    const hour = random.int(9, 21);
+  // 1. Continuous 40-Day Unbroken Streak (10 Aug 2026 se 18 Sep 2026 tak lagatar)
+  const streakStart = moment("2026-08-10");
+  for (let i = 0; i < 40; i++) {
+    const curDate = moment(streakStart).add(i, "days");
+    const hour = random.int(10, 20);
     const minute = random.int(0, 59);
     const second = random.int(0, 59);
+    curDate.set({ hour, minute, second });
+    commitDates.push(curDate.format());
+  }
 
-    const dateStr = `${target.year}-${String(target.month).padStart(2, "0")}-${String(day).padStart(2, "0")}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:${String(second).padStart(2, "0")}`;
-    const date = moment(dateStr).format();
+  // 2. October ke empty spots fill karne ke liye extra dates
+  const extraOctDays = [1, 3, 5, 12, 14, 21, 24, 28];
+  for (const d of extraOctDays) {
+    const curDate = moment(`2026-10-${String(d).padStart(2, "0")}`);
+    const hour = random.int(10, 20);
+    const minute = random.int(0, 59);
+    const second = random.int(0, 59);
+    curDate.set({ hour, minute, second });
+    commitDates.push(curDate.format());
+  }
 
-    const data = {
-      date: date,
-    };
+  console.log(`Starting ${commitDates.length} streak commits (Aug, Sep, Oct)...`);
+
+  for (let i = 0; i < commitDates.length; i++) {
+    const date = commitDates[i];
+    const data = { date };
 
     await jsonfile.writeFile(path, data);
     await git.add([path]);
     await git.commit(date, { "--date": date });
 
-    console.log(`[${i}/${n}] Commit created: ${date}`);
+    console.log(`[${i + 1}/${commitDates.length}] Commit created: ${date}`);
   }
 
-  console.log("Pushing all commits to GitHub...");
+  console.log("Pushing all streak commits to GitHub...");
   await git.push();
-  console.log("Done! Sabhi commits GitHub par push ho chuke hain.");
+  console.log("Done! Sabhi streak commits GitHub par push ho chuke hain.");
 };
 
-// 40 commits generate karein
-makeTargetedCommits(40);
+createStreakCommits();
